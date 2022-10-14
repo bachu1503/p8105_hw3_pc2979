@@ -1,0 +1,122 @@
+---
+title: "Homework 3"
+output:   
+  github_document
+---
+
+### Load packages 
+```{r, message = FALSE}
+library(tidyverse)
+library(ggridges)
+library(patchwork)
+library(readxl)
+library(p8105.datasets)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+## Problem 1
+
+### Import Instacart data
+```{r}
+data("instacart")
+instacart <- 
+  instacart %>% 
+  as_tibble(.)
+```
+
+### Describe dataset
+```{r}
+skimr::skim(instacart)
+```
+There are `r nrow(instacart)` observations and `r ncol(instacart)` variables in the `instacart` dataset. Key variables include `order_hour_of_day`, `order_dow`, `product_id`, `product_name`, `department`, `aisle`, and `days_since_prior_order`. Each row is a single product within an order. A total of `r instacart %>% select(user_id, order_id) %>% distinct %>% count` orders, `r instacart %>% select(product_id) %>% distinct() %>% count()` products,and `r instacart %>% select(user_id) %>% distinct() %>% count()` unique users are found in the dataset. 
+
+### Answering Questions
+
+#### How many aisles are there, and which aisles are the most items ordered from?
+```{r}
+instacart %>% count(aisle) %>% arrange(desc(n))
+```
+There are a total of 134 aisles. Most items were ordered from the fresh vegetables, fresh fruits, and packaged vegetables fruits aisles. 
+
+#### Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+```{r}
+instacart %>% 
+  count(aisle) %>% 
+  filter(n > 10000) %>% 
+  mutate(aisle = fct_reorder(aisle, n)) %>% 
+  ggplot(aes(x = aisle, y = n)) + 
+  geom_point() + 
+  labs(title = "Number of items ordered in each aisle") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
+#### Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+```{r}
+instacart %>% 
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>%
+  group_by(aisle) %>% 
+  count(product_name) %>% 
+  mutate(rank = min_rank(desc(n))) %>% 
+  filter(rank < 4) %>% 
+  arrange(desc(n)) %>%
+  knitr::kable()
+```
+
+#### Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+```{r}
+instacart %>%
+  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>%
+  group_by(product_name, order_dow) %>%
+  summarize(mean_hour = mean(order_hour_of_day)) %>%
+  spread(key = order_dow, value = mean_hour) %>%
+  knitr::kable(digits = 2)
+```
+
+## Problem 2
+
+### Import and clean data
+```{r, message = FALSE}
+accel <- read_csv('data/accel_data.csv',
+                  col_names = TRUE) %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute",
+    values_to = "activity"
+  ) %>%
+  rename(day_of_week = day) %>%
+  mutate(
+    is_weekend = ifelse(day_of_week == c("Saturday", "Sunday"), TRUE, FALSE),
+    minute = str_replace(minute,"activity_", "")
+  ) %>%
+  relocate(is_weekend, .after = day_of_week)
+
+str(accel)
+```
+`accel` has a total of `r nrow(accel)` observations and `r ncol(accel)` variables. Each row contains accelerometer measurements for 24 hours. Variables include week and day of measurement, whether the day was a weekend or not, and accelerometer measurements for each minute of a 24 hour day starting at midnight. This particular subject was tracked for `r accel %>% summarize(max(week))` weeks or `r accel %>% summarize(max(day_id))` days. 
+
+### Aggregate across minutes to create a total activity variable for each day, and create a table showing these totals
+```{r}
+accel %>% 
+  group_by(day_id) %>%
+  summarize(total_activity = sum(activity)) %>%
+  arrange(desc(total_activity))
+```
+
