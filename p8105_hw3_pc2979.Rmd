@@ -107,8 +107,6 @@ accel <- read_csv('data/accel_data.csv',
     minute = str_replace(minute,"activity_", "")
   ) %>%
   relocate(is_weekend, .after = day_of_week)
-
-str(accel)
 ```
 `accel` has a total of `r nrow(accel)` observations and `r ncol(accel)` variables. Each row contains accelerometer measurements for 24 hours. Variables include week and day of measurement, whether the day was a weekend or not, and accelerometer measurements for each minute of a 24 hour day starting at midnight. This particular subject was tracked for `r accel %>% summarize(max(week))` weeks or `r accel %>% summarize(max(day_id))` days. 
 
@@ -117,6 +115,6 @@ str(accel)
 accel %>% 
   group_by(day_id) %>%
   summarize(total_activity = sum(activity)) %>%
-  arrange(desc(total_activity))
+  arrange(desc(total_activity)) %>% as.data.frame()
 ```
 
