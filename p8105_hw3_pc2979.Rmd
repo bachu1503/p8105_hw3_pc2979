@@ -101,20 +101,55 @@ accel <- read_csv('data/accel_data.csv',
     names_to = "minute",
     values_to = "activity"
   ) %>%
-  rename(day_of_week = day) %>%
   mutate(
+    day_of_week = factor(day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"), ordered = TRUE),
     is_weekend = ifelse(day_of_week == c("Saturday", "Sunday"), TRUE, FALSE),
-    minute = str_replace(minute,"activity_", "")
+    minute = str_replace(minute,"activity_", ""),
+    minute = as.numeric(minute),
+    hour = minute/60
   ) %>%
-  relocate(is_weekend, .after = day_of_week)
+  relocate(is_weekend, .after = day_of_week) %>%
+  arrange(day_of_week)
+
 ```
 `accel` has a total of `r nrow(accel)` observations and `r ncol(accel)` variables. Each row contains accelerometer measurements for 24 hours. Variables include week and day of measurement, whether the day was a weekend or not, and accelerometer measurements for each minute of a 24 hour day starting at midnight. This particular subject was tracked for `r accel %>% summarize(max(week))` weeks or `r accel %>% summarize(max(day_id))` days. 
 
 ### Aggregate across minutes to create a total activity variable for each day, and create a table showing these totals
 ```{r}
 accel %>% 
-  group_by(day_id) %>%
+  group_by(week, day_of_week) %>%
   summarize(total_activity = sum(activity)) %>%
-  arrange(desc(total_activity)) %>% as.data.frame()
+  arrange(desc(total_activity)) %>%
+  pivot_wider(
+    names_from = "day_of_week",
+    values_from = "total_activity"
+  ) %>%
+  knitr::kable(digits = 2)
+```
+We see that on average, highest activity occurs during the weekday. Without additional analysis, any trends present within the data is not obvious.
+
+```{r}
+accel %>% 
+  ggplot(aes(x = hour, y = activity, color = day_of_week)) + 
+  geom_point() + 
+  facet_grid(. ~ factor(day_of_week, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")))
+  labs(title = "Activity over 1 Week",
+       x = "Hour of Day",
+       y = "Activity")
+  
+str(accel)
+max(accel$hour)
+```
+Based on the graph, 
+
+
+## Problem 3
+
+### Import NY NOAA data
+```{r}
+data("ny_noaa")
+noaa <- 
+  ny_noaa %>% 
+  as_tibble(.)
 ```
 
