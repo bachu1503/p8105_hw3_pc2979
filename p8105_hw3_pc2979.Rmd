@@ -129,7 +129,7 @@ We see that on average, highest activity occurs during the weekday. Without addi
 ```{r}
 accel %>% 
   ggplot(aes(x = hour, y = activity, color = day_of_week)) + 
-  geom_point(aes(alpha = 0.5)) + 
+  geom_point(aes(alpha = 0.05)) + 
   scale_x_continuous(
     breaks = c(0, 6, 12, 18, 24)
   ) +
@@ -164,8 +164,8 @@ ny_noaa <-
     month = lubridate::month(date),
     day = lubridate::day(date),
     snow = ifelse(snow == -13, NA, snow),
-    tmax = as.numeric(tmax)/10,
-    tmin = as.numeric(tmin)/10,
+    tmax = (as.numeric(tmax))/10,
+    tmin = (as.numeric(tmin))/10,
     prcp = prcp/10
   )
 ```
@@ -182,11 +182,17 @@ The top 5 commonly observed values of snowfall is 0, 25, 13, 51, and 76. This is
 Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
 ```{r}
 ny_noaa %>%
+  filter(month %in% c(1,7)) %>%
   group_by(id, year, month) %>%
   summarize(mean_tmax = mean(tmax, na.rm = TRUE)) %>%
-  filter(month %in% c(1,6)) %>%
-  ggplot(aes(x = year, y = mean_tmax, group = id)) +
-  geom_point() +
-  facet_grid(~ month)
+  mutate(month = month.name[month]) %>%
+  ggplot(aes(x = year, y = mean_tmax)) +
+  geom_point(aes(alpha = 0.05)) +
+  facet_grid(~ month) +
+  labs(title = "Average New York Max  Temperature in January and July (1980-2010)",
+       x = "Year",
+       y = "Average Max Temperature") +
+  scale_y_continuous(
+    limits = c()
+  )
 ```
-
