@@ -129,15 +129,18 @@ We see that on average, highest activity occurs during the weekday. Without addi
 
 ```{r}
 accel %>% 
-  ggplot(aes(x = hour, y = activity, color = day_of_week)) + 
-  geom_point(aes(alpha = 0.05)) + 
+  group_by(hour, week, day_of_week) %>%
+  summarize(total_activity = sum(activity)) %>%
+  ggplot(aes(x = hour, y = total_activity, color = day_of_week)) + 
+  geom_point(aes(alpha = 0.5)) + 
   scale_x_continuous(
     breaks = c(0, 6, 12, 18, 24)
   ) +
-  labs(title = "Activity over 1 Week",
+  labs(title = "24-Hour Activity for Each Day",
        x = "Hour of Day",
        y = "Activity",
-       color = "Day of Week")
+       color = "Day of Week") +
+  theme(legend.position = "bottom")
 ```
 Based on the graph, we see that the majority of activity counts per minute are less than 2500. Interestingly, there is a spike in activity at 12 PM some days between Monday to Thursday and another spike in activity at around 7 PM - 10 PM between Thursday and Saturday. 
 
@@ -188,13 +191,13 @@ ny_noaa %>%
   summarize(mean_tmax = mean(tmax, na.rm = TRUE)) %>%
   mutate(month = month.name[month]) %>%
   ggplot(aes(x = year, y = mean_tmax)) +
-  geom_point(aes(alpha = 0.05)) +
+  geom_point(aes(alpha = 0.5)) +
   facet_grid(~ month) +
   labs(title = "Average New York Max  Temperature in January and July (1980-2010)",
        x = "Year",
        y = "Average Max Temperature") +
   scale_y_continuous(
-    limits = c()
+    limits = c() 
   )
 ```
 laj;sdkfja;lskdfja;lskdfj
@@ -204,6 +207,8 @@ Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a
 tmax_tmin <- 
   ny_noaa %>%
   ggplot(aes(x = tmax, y = tmin)) +
-  geom_point()
+  geom_hex() %>%
+  
+  violin
 ```
 WATTTTT
