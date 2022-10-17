@@ -190,13 +190,15 @@ ny_noaa %>%
   group_by(id, year, month) %>%
   summarize(mean_tmax = mean(tmax, na.rm = TRUE)) %>%
   ggplot(aes(x = year, y = mean_tmax), group = id) +
-  geom_line(aes(show.legend = FALSE, alpha = 0.5)) +
+  geom_line(aes(show.legend = FALSE, alpha = 0.3)) +
+  geom_point(alpha = 0.3) +
   geom_smooth(aes(x = year, y = mean_tmax), color = "blue", show.legend = FALSE) +
   facet_grid(~ month, labeller = labeller(month = c("1" = "January", "7" = "July"))) +
   labs(title = "Average New York Max Temperature in January and July (1980-2010)",
        x = "Year",
        y = "Average Max Temperature (C)") + 
-  scale_x_continuous(n.breaks = 15)+theme(axis.text.x = element_text(angle = -75))
+  scale_x_continuous(n.breaks = 20) +
+  theme(axis.text.x = element_text(angle = -75))
 ```
 laj;sdkfja;lskdfja;lskdfj
 
@@ -217,28 +219,17 @@ snow_year <-
   ny_noaa %>%
   filter(snow > 0 & snow < 100) %>%
   mutate(year = as.factor(year)) %>%
-  ggplot(aes(x = year, y = snow, alpha = 0.5)) +
-  geom_violin(aes(fill = year), color = "green") +
-  theme(legend.position = "none") +
-
-
-snow100 <-
-  ny_noaa %>%
-  filter(
-    snow > 0, 
-    snow < 100) %>%
-  mutate(year = as.factor(year)) %>%
   ggplot(aes(x = year, y = snow)) +
-  geom_violin(aes(fill = year), color = "blue", alpha = .5)+
+  geom_violin(aes(fill = year), color = "green", alpha = 0.5) +
   theme(legend.position = "none") +
   labs(
-    title = "The distribution of snowfall, 0 mm to 100mm by year",
+    title = "Distribution of Snowfall (0 - 100 mm) by year",
     x = "Year",
     y = "Snowfall (mm)"
   ) +
-     theme(axis.text.x = element_text(angle = 270))
+  theme(axis.text.x = element_text(angle = -70))
 
-tmax_tmin + snow100 
-ggsave("tmax_tmin + snow100.pdf", width = 10, height = 5)
+tmax_tmin + snow_year 
+ggsave("min_max_snow.pdf", width = 10, height = 5)
 ```
 WATTTTT
