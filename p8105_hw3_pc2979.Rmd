@@ -212,7 +212,7 @@ tmax_tmin <-
     title = "TMax vs. TMin",
     x = "Maximum Daily Temperature (C)",
     y = "Minimum Daily Temperature (C)",
-    fill = "Number of Occcurences"
+    fill = "Count"
   )
 
 snow_year <-
@@ -230,6 +230,5 @@ snow_year <-
   theme(axis.text.x = element_text(angle = -70))
 
 tmax_tmin + snow_year 
-
 ggsave("min_max_snow.pdf", width = 10, height = 5)
 ```
