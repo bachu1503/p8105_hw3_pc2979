@@ -200,7 +200,7 @@ ny_noaa %>%
   scale_x_continuous(n.breaks = 20) +
   theme(axis.text.x = element_text(angle = -75))
 ```
-laj;sdkfja;lskdfja;lskdfj
+Based on the trendline, there is much more fluctuation in max temperature in January over the years compared to July in New York. Some notable outliers include the low max temperature in January 1982 and low max temperature in July 1988. 
 
 Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
 ```{r}
@@ -209,7 +209,7 @@ tmax_tmin <-
   ggplot(aes(x = tmax, y = tmin), color = id) +
   geom_hex(alpha = 0.8) + 
   labs(
-    title = "TMax vs. Tmin",
+    title = "TMax vs. TMin",
     x = "Maximum Daily Temperature (C)",
     y = "Minimum Daily Temperature (C)",
     fill = "Number of Occcurences"
@@ -220,7 +220,7 @@ snow_year <-
   filter(snow > 0 & snow < 100) %>%
   mutate(year = as.factor(year)) %>%
   ggplot(aes(x = year, y = snow)) +
-  geom_violin(aes(fill = year), color = "green", alpha = 0.5) +
+  geom_violin(aes(fill = year), color = "blue", alpha = 0.5) +
   theme(legend.position = "none") +
   labs(
     title = "Distribution of Snowfall (0 - 100 mm) by year",
@@ -230,6 +230,6 @@ snow_year <-
   theme(axis.text.x = element_text(angle = -70))
 
 tmax_tmin + snow_year 
+
 ggsave("min_max_snow.pdf", width = 10, height = 5)
 ```
-WATTTTT
