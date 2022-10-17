@@ -108,8 +108,7 @@ accel <- read_csv('data/accel_data.csv',
     minute = as.numeric(minute),
     hour = minute/60
   ) %>%
-  relocate(is_weekend, .after = day_of_week) %>%
-  arrange(day_of_week)
+  relocate(is_weekend, .after = day_of_week)
 
 ```
 `accel` has a total of `r nrow(accel)` observations and `r ncol(accel)` variables. Each row contains accelerometer measurements for 24 hours. Variables include week and day of measurement, whether the day was a weekend or not, and accelerometer measurements for each minute of a 24 hour day starting at midnight. This particular subject was tracked for `r accel %>% summarize(max(week))` weeks or `r accel %>% summarize(max(day_id))` days. 
@@ -119,7 +118,6 @@ accel <- read_csv('data/accel_data.csv',
 accel %>% 
   group_by(week, day_of_week) %>%
   summarize(total_activity = sum(activity)) %>%
-  arrange(desc(total_activity)) %>%
   pivot_wider(
     names_from = "day_of_week",
     values_from = "total_activity"
@@ -131,16 +129,16 @@ We see that on average, highest activity occurs during the weekday. Without addi
 ```{r}
 accel %>% 
   ggplot(aes(x = hour, y = activity, color = day_of_week)) + 
-  geom_point() + 
-  facet_grid(. ~ factor(day_of_week, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")))
+  geom_point(aes(alpha = 0.5)) + 
+  scale_x_continuous(
+    breaks = c(0, 6, 12, 18, 24)
+  ) +
   labs(title = "Activity over 1 Week",
        x = "Hour of Day",
-       y = "Activity")
-  
-str(accel)
-max(accel$hour)
+       y = "Activity",
+       color = "Day of Week")
 ```
-Based on the graph, 
+Based on the graph, we see that the majority of activity counts per minute are less than 2500. Interestingly, there is a spike in activity at 12 PM some days between Monday to Thursday and another spike in activity at around 7 PM - 10 PM between Thursday and Saturday. 
 
 
 ## Problem 3
@@ -148,8 +146,47 @@ Based on the graph,
 ### Import NY NOAA data
 ```{r}
 data("ny_noaa")
-noaa <- 
+ny_noaa <- 
   ny_noaa %>% 
   as_tibble(.)
+
+skimr::skim(ny_noaa)
+```
+`ny_noaa` contains weather data gathered from NY weather stations. There are `r nrow(ny_noaa)` observations and `r ncol(ny_noaa)` variables. Each row is the daily precipitation (mm), snowfall (mm), and temperature(C) gathered from a weather station. There is extensive missing data in the dataset. Both `tmax` and `tmin` are missing 44%, `prcp` missing 6%, `snow` missing 15%, and `snwd` missing 23% of observations. 
+
+### Clean and tidy data
+```{r}
+ny_noaa <-
+  ny_noaa %>%
+  janitor::clean_names() %>%
+  mutate(
+    year = lubridate::year(date),
+    month = lubridate::month(date),
+    day = lubridate::day(date),
+    snow = ifelse(snow == -13, NA, snow),
+    tmax = as.numeric(tmax)/10,
+    tmin = as.numeric(tmin)/10,
+    prcp = prcp/10
+  )
+```
+
+Most common observed values for snowfall:
+```{r}
+ny_noaa %>%
+  group_by(snow) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+```
+The top 5 commonly observed values of snowfall is 0, 25, 13, 51, and 76. This is reasonable as most days in NY don't experience snowfall and when they do, only experience limited quantities.
+
+Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
+```{r}
+ny_noaa %>%
+  group_by(id, year, month) %>%
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE)) %>%
+  filter(month %in% c(1,6)) %>%
+  ggplot(aes(x = year, y = mean_tmax, group = id)) +
+  geom_point() +
+  facet_grid(~ month)
 ```
 
