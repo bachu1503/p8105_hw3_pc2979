@@ -11,6 +11,7 @@ library(ggridges)
 library(patchwork)
 library(readxl)
 library(p8105.datasets)
+library(patchwork)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -196,3 +197,13 @@ ny_noaa %>%
     limits = c()
   )
 ```
+laj;sdkfja;lskdfja;lskdfj
+
+Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
+```{r}
+tmax_tmin <- 
+  ny_noaa %>%
+  ggplot(aes(x = tmax, y = tmin)) +
+  geom_point()
+```
+WATTTTT
